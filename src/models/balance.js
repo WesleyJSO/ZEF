@@ -1,7 +1,8 @@
 "use strict";
-const { Model } = require("sequelize");
-const currency = require("./currency");
-const wallet = require("./wallet");
+const { Model, Deferrable } = require("sequelize");
+const Currency = require("./currency");
+const Wallet = require("./wallet");
+
 module.exports = (sequelize, DataTypes) => {
   class Balance extends Model {
     static associate(models) {
@@ -19,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       wallet: {
         type: DataTypes.INTEGER,
         references: {
-          model: wallet,
+          model: Wallet,
           key: "id",
           deferrable: Deferrable.NOT,
         },
@@ -27,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
       currrency: {
         type: DataTypes.INTEGER,
         references: {
-          model: currency,
+          model: Currency,
           key: "id",
           deferrable: Deferrable.NOT,
         },

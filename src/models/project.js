@@ -1,6 +1,8 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, Deferrable } = require("sequelize");
 const currency = require("./currency");
+const Member = require("./member");
+
 module.exports = (sequelize, DataTypes) => {
   class Project extends Model {
     static associate(models) {
@@ -17,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       member: {
         type: DataTypes.INTEGER,
         references: {
-          model: member,
+          model: Member,
           key: "id",
           deferrable: Deferrable.NOT,
         },
