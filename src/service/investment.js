@@ -46,9 +46,8 @@ const validateMembershipFee = (value, memberId) => {
 const validateMember = (member) => {
   if (!member) {
     return {
-      statusCode: 400,
-      message:
-        "Member id informed is invalid, the user must be registered for this operation!",
+      statusCode: 404,
+      message: "Member couldn't be found, invalid member id!",
     };
   }
   if (!member.Wallet) {
@@ -96,7 +95,7 @@ const makeAnInvestment = async ({
   });
   if (!investor) {
     return {
-      reasonCode: 404,
+      statusCode: 404,
       message: "Member couldn't be found, invalid member id!",
     };
   }
@@ -104,6 +103,17 @@ const makeAnInvestment = async ({
   const croatinaKuna = await currencyRepository.findOne({
     where: { name: "Croatian kuna" },
   });
+
+  // increase value invested in project
+  const projectInvested = await projectRepository.findOne({
+    where: { id: projectInvestedId },
+    include: models.sequelize.models.Currency,
+  });
+  if (!projectInvested) {
+    throw new Error(
+      "Project not found, a valid project id should be informed!"
+    );
+  }
 
   const { message: kunaBalance } =
     await balanceService.getMemberCurrencyBalance({
@@ -131,14 +141,6 @@ const makeAnInvestment = async ({
       walletId: investor.Wallet.id,
     });
 
-    // increase value invested in project
-    const projectInvested = await projectRepository.findOne({
-      where: { id: projectInvestedId },
-      include: models.sequelize.models.Currency,
-    });
-    if (!projectInvested) {
-      throw new Error("Invalid project id!");
-    }
     projectInvested.value += investedValue;
     await projectRepository.update(
       { value: projectInvested.value },
@@ -184,7 +186,7 @@ const croatianKunaDeposity = async ({ investorId, depositValue }) => {
     return {
       statusCode: 400,
       message:
-        "Deposit value should be informed and should be greather than 0!",
+        "Deposit value should be informed and should be greather than 0.0!",
     };
   }
   const investor = await memberRepository.findOne({
@@ -194,7 +196,7 @@ const croatianKunaDeposity = async ({ investorId, depositValue }) => {
   if (!investor) {
     return {
       statusCode: 404,
-      message: "Member not found, a valid member id should be informed!",
+      message: "Member couldn't be found, invalid member id!",
     };
   }
 

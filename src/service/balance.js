@@ -54,7 +54,10 @@ module.exports = {
     });
 
     if (!member) {
-      return { statusCode: 404, message: "Invalid member id!" };
+      return {
+        statusCode: 404,
+        message: "Member couldn't be found, invalid member id!",
+      };
     }
     const grouped = groupBalancesByCurrency(member.Wallet.Balances);
 
@@ -71,7 +74,7 @@ module.exports = {
     const member = await memberRepository.findByPk(memberId);
     if (!member || member.type !== "DOMAIN_OWNER") {
       return {
-        statusCode: 400,
+        statusCode: 401,
         message: "Member informed is not an administrator!",
       };
     }
@@ -99,7 +102,10 @@ module.exports = {
       },
     });
     if (!member) {
-      return { statusCode: 404, message: "Invalid member id!" };
+      return {
+        statusCode: 404,
+        message: "Member couldn't be found, invalid member id!",
+      };
     }
     const grouped = groupBalancesByCurrency(member.Wallet.Balances);
 

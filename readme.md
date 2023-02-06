@@ -1,11 +1,10 @@
-https://sequelize.org/docs/v6/other-topics/migrations/
+# ZEF app
 
-npm install --save-dev sequelize-cli
+## 1. Setup
 
-npx sequelize-cli model:generate --name User --attributes firstName:string
-npx sequelize-cli db:migrate
-npx sequelize-cli db:migrate:undo:all
+## 2. Frameworks and libraries
 
-npx sequelize-cli seed:generate --name demo-user
-npx sequelize-cli db:seed:all
-npx sequelize-cli db:seed:undo:all
+- [NodeJS](https://nodejs.org/en/about/)
+- [Express](https://www.npmjs.com/package/express)
+- [Sqlite3 database](https://www.npmjs.com/package/sqlite3)
+- [Sequelize ORM](https://sequelize.org/docs/v6/)

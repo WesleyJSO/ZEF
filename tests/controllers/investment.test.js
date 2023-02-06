@@ -1,7 +1,7 @@
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const Uuid = require("uuid");
-const { initialize } = require("./index");
+const { balanceRepository, initialize } = require("./index");
 
 chai.use(chaiHttp);
 chai.should();

@@ -4,10 +4,10 @@ const repository = models.sequelize.models.Member;
 const walletRepository = models.sequelize.models.Wallet;
 
 const validateParameters = (name, document, type) => {
-  if (!name || !name.trim()) {
+  if (!name) {
     return { statusCode: 400, message: "Name should be informed!" };
   }
-  if (!document || !document.trim()) {
+  if (!document) {
     return { statusCode: 400, message: "Document should be informed!" };
   }
   if (!type || !["DOMAIN_OWNER", "COMPANY", "INDIVIDUAL"].includes(type)) {

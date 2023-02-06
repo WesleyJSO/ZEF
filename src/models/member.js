@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   class Member extends Model {
     static associate(models) {
       Member.Wallet = Member.hasOne(models.Wallet);
-      Member.Project = Member.hasOne(models.Project);
+      Member.Projects = Member.hasMany(models.Project);
     }
   }
   Member.init(
