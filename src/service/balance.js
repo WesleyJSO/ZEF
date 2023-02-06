@@ -28,13 +28,20 @@ const groupBalancesByCurrency = (balances) => {
   return grouped;
 };
 
-const getMemberCurrencyBalance = async ({ memberId, currencyId }) => {
+const validateParameters = (memberId, currencyId) => {
   if (!memberId) {
     return { statusCode: 400, message: "Member id should be informed!" };
   }
   if (!currencyId) {
     return { statusCode: 400, message: "Currency id should be informed!" };
   }
+};
+const getMemberCurrencyBalance = async ({ memberId, currencyId }) => {
+  const invalid = validateParameters(memberId, currencyId);
+  if (invalid) {
+    return invalid;
+  }
+
   const member = await memberRepository.findOne({
     where: { id: memberId },
     include: {
@@ -48,18 +55,35 @@ const getMemberCurrencyBalance = async ({ memberId, currencyId }) => {
       },
     },
   });
-  const grouped = await groupBalancesByCurrency(member.Wallet.Balances);
+
+  if (!member) {
+    return { statusCode: 404, message: "Invalid member id!" };
+  }
+  const grouped = groupBalancesByCurrency(member.Wallet.Balances);
 
   return { statusCode: 200, message: grouped };
 };
 
 module.exports = {
   getMemberCurrencyBalance,
-  getSumaryOfCurrencyValues: async () => {
+  getSumaryOfCurrencyValues: async ({ memberid: memberId }) => {
+    if (!memberId) {
+      return {
+        statusCode: 400,
+        message: "Invalid request, missing MemberId header!",
+      };
+    }
+    const member = await memberRepository.findByPk(memberId);
+    if (!member || member.type !== "DOMAIN_OWNER") {
+      return {
+        statusCode: 400,
+        message: "Member informed is not an administrator!",
+      };
+    }
     const balances = await repository.findAll({
       include: models.sequelize.models.Currency,
     });
-    const grouped = await groupBalancesByCurrency(balances);
+    const grouped = groupBalancesByCurrency(balances);
     return { statusCode: 200, message: grouped };
   },
 

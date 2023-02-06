@@ -27,7 +27,9 @@ module.exports = {
   },
   getSumaryOfCurrencyValues: async (req, res) => {
     try {
-      const { statusCode, message } = await service.getSumaryOfCurrencyValues();
+      const { statusCode, message } = await service.getSumaryOfCurrencyValues(
+        req.headers
+      );
 
       res.status(statusCode).send(message);
     } catch (error) {

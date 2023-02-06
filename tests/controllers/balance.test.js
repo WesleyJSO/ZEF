@@ -105,6 +105,7 @@ describe("Balances", () => {
       chai
         .request(server)
         .get("/balance")
+        .set({ memberId: 1 })
         .end((error, response) => {
           error !== null
             ? console.error(error)
