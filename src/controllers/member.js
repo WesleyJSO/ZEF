@@ -1,5 +1,4 @@
-const models = require("../models/index.js");
-const service = require("../service/project");
+const service = require("../service/member");
 
 module.exports = {
   create: async (req, res) => {
@@ -9,14 +8,6 @@ module.exports = {
       res.status(statusCode).send(message);
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: error.message });
-    }
-  },
-
-  findAll: async ({ res }) => {
-    try {
-      res.status(200).send(await service.findAll());
-    } catch (error) {
       res.status(500).send({ message: error.message });
     }
   },

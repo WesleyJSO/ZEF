@@ -1,14 +1,18 @@
 const express = require("express");
-var http = require("http");
-const project = require("./routes/project.js");
+const routes = require("./routes/index.js");
 const database = require("./config/database.js");
+const idempotency = require("express-idempotency");
+const idempotencyCheck = require("./middlewares/idempotency.js");
 
 const app = express();
+
+app.use(idempotency.idempotency());
+app.post("*", idempotencyCheck);
 
 const configureExpress = () => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use("/", project);
+  app.use("/", routes);
   return app;
 };
 
