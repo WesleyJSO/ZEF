@@ -13,18 +13,13 @@ const groupBalancesByCurrency = (balances) => {
         grouped[balance.Currency.alias] = {
           currency: balance.Currency.name,
           amount: balance.value,
-          price: 0.0,
-          croatianKunaQuotation: 1,
+          price: balance.Currency.quotation,
+          croatianKunaQuotation: 1.0,
         };
       } else {
         grouped[balance.Currency.alias].amount += balance.value;
       }
     });
-  for (key of Object.keys(grouped)) {
-    grouped[key].price = parseFloat(
-      (grouped[key].croatianKunaQuotation * grouped[key].amount).toFixed(2)
-    );
-  }
   return grouped;
 };
 
@@ -36,36 +31,36 @@ const validateParameters = (memberId, currencyId) => {
     return { statusCode: 400, message: "Currency id should be informed!" };
   }
 };
-const getMemberCurrencyBalance = async ({ memberId, currencyId }) => {
-  const invalid = validateParameters(memberId, currencyId);
-  if (invalid) {
-    return invalid;
-  }
-
-  const member = await memberRepository.findOne({
-    where: { id: memberId },
-    include: {
-      model: models.sequelize.models.Wallet,
-      include: {
-        model: models.sequelize.models.Balance,
-        include: {
-          model: models.sequelize.models.Currency,
-          where: { id: currencyId },
-        },
-      },
-    },
-  });
-
-  if (!member) {
-    return { statusCode: 404, message: "Invalid member id!" };
-  }
-  const grouped = groupBalancesByCurrency(member.Wallet.Balances);
-
-  return { statusCode: 200, message: grouped };
-};
 
 module.exports = {
-  getMemberCurrencyBalance,
+  getMemberCurrencyBalance: async ({ memberId, currencyId }) => {
+    const invalid = validateParameters(memberId, currencyId);
+    if (invalid) {
+      return invalid;
+    }
+
+    const member = await memberRepository.findOne({
+      where: { id: memberId },
+      include: {
+        model: models.sequelize.models.Wallet,
+        include: {
+          model: models.sequelize.models.Balance,
+          include: {
+            model: models.sequelize.models.Currency,
+            where: { id: currencyId },
+          },
+        },
+      },
+    });
+
+    if (!member) {
+      return { statusCode: 404, message: "Invalid member id!" };
+    }
+    const grouped = groupBalancesByCurrency(member.Wallet.Balances);
+
+    return { statusCode: 200, message: grouped };
+  },
+
   getSumaryOfCurrencyValues: async ({ memberid: memberId }) => {
     if (!memberId) {
       return {
@@ -87,13 +82,27 @@ module.exports = {
     return { statusCode: 200, message: grouped };
   },
 
-  getCroatinaKunaBalance: async ({ memberId }) => {
-    const croatinaKuna = await currencyRepository.findOne({
-      where: { name: "Croatian kuna" },
+  getAllBalance: async ({ memberId }) => {
+    if (!memberId) {
+      return { statusCode: 400, message: "Member id should be informed!" };
+    }
+    const member = await memberRepository.findOne({
+      where: { id: memberId },
+      include: {
+        model: models.sequelize.models.Wallet,
+        include: {
+          model: models.sequelize.models.Balance,
+          include: {
+            model: models.sequelize.models.Currency,
+          },
+        },
+      },
     });
-    return await getMemberCurrencyBalance({
-      memberId,
-      currencyId: croatinaKuna.id,
-    });
+    if (!member) {
+      return { statusCode: 404, message: "Invalid member id!" };
+    }
+    const grouped = groupBalancesByCurrency(member.Wallet.Balances);
+
+    return { statusCode: 200, message: grouped };
   },
 };

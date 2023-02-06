@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL,
         allowNull: false,
       },
+      quotation: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+      },
       projectId: {
         type: DataTypes.INTEGER,
         references: {

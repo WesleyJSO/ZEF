@@ -7,7 +7,7 @@ router.get(
   "/balance/:memberId/:currencyId",
   controller.getMemberCurrencyBalance
 );
-router.get("/balance/:memberId", controller.getCroatinaKunaBalance);
-router.get("/balance/", controller.getSumaryOfCurrencyValues);
+router.get("/balance/:memberId", controller.getAllBalance);
+router.get("/balance", controller.getSumaryOfCurrencyValues);
 
 module.exports = router;

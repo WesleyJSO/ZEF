@@ -60,12 +60,7 @@ const validateMember = (member) => {
   }
 };
 
-const validateInvestment = (
-  investorId,
-  projectInvestedId,
-  investedValue,
-  transactionType
-) => {
+const validateInvestment = (investorId, projectInvestedId, investedValue) => {
   if (!investorId) {
     return { statusCode: 400, message: "Member id should be informed!" };
   }
@@ -79,22 +74,17 @@ const validateInvestment = (
         "Value invested should be informed and should be greather than 0!",
     };
   }
-  if (!transactionType) {
-    return { statusCode: 400, message: "Type should be informed!" };
-  }
 };
 
 const makeAnInvestment = async ({
   investorId,
   projectInvestedId,
   investedValue,
-  transactionType,
 }) => {
   const invalidParameters = validateInvestment(
     investorId,
     projectInvestedId,
-    investedValue,
-    transactionType
+    investedValue
   );
   if (invalidParameters) {
     return invalidParameters;
@@ -111,9 +101,15 @@ const makeAnInvestment = async ({
     };
   }
 
-  const { message: kunaBalance } = await balanceService.getCroatinaKunaBalance({
-    memberId: investor.id,
+  const croatinaKuna = await currencyRepository.findOne({
+    where: { name: "Croatian kuna" },
   });
+
+  const { message: kunaBalance } =
+    await balanceService.getMemberCurrencyBalance({
+      memberId: investor.id,
+      currencyId: croatinaKuna.id,
+    });
   if (
     !kunaBalance.HRK ||
     !kunaBalance.HRK.amount ||
@@ -124,10 +120,6 @@ const makeAnInvestment = async ({
       message: "Insuficient amount of Kuna to invest!",
     };
   }
-
-  const croatinaKuna = await currencyRepository.findOne({
-    where: { name: "Croatian kuna" },
-  });
 
   const transaction = await models.sequelize.transaction();
   try {
@@ -155,11 +147,15 @@ const makeAnInvestment = async ({
 
     // credit project currency value to investor
     // (project value / currency amount) * my amount ZNK
-    const calculatedDigitalAmount =
-      (projectInvested.value / projectInvested.Currency.amount) * investedValue;
+    const quotation = projectInvested.value / projectInvested.Currency.amount;
+    const calculatedDigitalAmount = investedValue / quotation;
 
+    await currencyRepository.update(
+      { quotation },
+      { where: { id: projectInvested.Currency.id } }
+    );
     const credit = await balanceRepository.create({
-      type: transactionType, // MEMBERSHIP_FEE | ASSET_ACQUISITION
+      type: "ASSET_ACQUISITION",
       value: calculatedDigitalAmount,
       walletId: investor.Wallet.id,
       currencyId: projectInvested.Currency.id,
@@ -175,6 +171,44 @@ const makeAnInvestment = async ({
       message: `Error during investment transaction: ${error.message}`,
     };
   }
+};
+
+const croatianKunaDeposity = async ({ investorId, depositValue }) => {
+  if (!investorId) {
+    return {
+      statusCode: 400,
+      message: "Member id shoud be informed!",
+    };
+  }
+  if (!depositValue || isNaN(depositValue) || depositValue <= 0) {
+    return {
+      statusCode: 400,
+      message:
+        "Deposit value should be informed and should be greather than 0!",
+    };
+  }
+  const investor = await memberRepository.findOne({
+    where: { id: investorId },
+    include: models.sequelize.models.Wallet,
+  });
+  if (!investor) {
+    return {
+      statusCode: 404,
+      message: "Member not found, a valid member id should be informed!",
+    };
+  }
+
+  const croatinaKuna = await currencyRepository.findOne({
+    where: { name: "Croatian kuna" },
+  });
+
+  const deposit = await balanceRepository.create({
+    type: "DEPOSIT",
+    value: depositValue,
+    currencyId: croatinaKuna.id,
+    walletId: investor.Wallet.id,
+  });
+  return { statusCode: 201, message: deposit };
 };
 
 module.exports = {
@@ -196,11 +230,20 @@ module.exports = {
       return invalidMember;
     }
     const project = await projectRepository.findOne({ where: { name: "ZEF" } });
+    const croatinaKuna = await currencyRepository.findOne({
+      where: { name: "Croatian kuna" },
+    });
+    await balanceRepository.create({
+      type: "MEMBERSHIP_FEE",
+      value,
+      currencyId: croatinaKuna.id,
+      walletId: member.Wallet.id,
+    });
     return await makeAnInvestment({
       investorId: member.id,
       projectInvestedId: project.id,
       investedValue: value,
-      transactionType: "MEMBERSHIP_FEE",
+      transactionType: "ASSET_ACQUISITION",
     });
   },
   makeAnInvestment,
@@ -214,41 +257,5 @@ module.exports = {
    * @param {depositValue} double value to be credited in the form of Croatian Kuna(HRK)
    * @returns balance deposit
    */
-  croatianKunaDeposity: async ({ investorId, depositValue }) => {
-    if (!investorId) {
-      return {
-        statusCode: 400,
-        message: "Member id shoud be informed!",
-      };
-    }
-    if (!depositValue || isNaN(depositValue) || depositValue <= 0) {
-      return {
-        statusCode: 400,
-        message:
-          "Deposit value should be informed and should be greather than 0!",
-      };
-    }
-    const investor = await memberRepository.findOne({
-      where: { id: investorId },
-      include: models.sequelize.models.Wallet,
-    });
-    if (!investor) {
-      return {
-        statusCode: 404,
-        message: "Member not found, a valid member id should be informed!",
-      };
-    }
-
-    const croatinaKuna = await currencyRepository.findOne({
-      where: { name: "Croatian kuna" },
-    });
-
-    const deposit = await balanceRepository.create({
-      type: "DEPOSIT",
-      value: depositValue,
-      currencyId: croatinaKuna.id,
-      walletId: investor.Wallet.id,
-    });
-    return { statusCode: 201, message: deposit };
-  },
+  croatianKunaDeposity,
 };

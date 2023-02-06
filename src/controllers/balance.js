@@ -13,11 +13,9 @@ module.exports = {
       res.status(500).send({ message: error.message });
     }
   },
-  getCroatinaKunaBalance: async (req, res) => {
+  getAllBalance: async (req, res) => {
     try {
-      const { statusCode, message } = await service.getCroatinaKunaBalance(
-        req.params
-      );
+      const { statusCode, message } = await service.getAllBalance(req.params);
 
       res.status(statusCode).send(message);
     } catch (error) {

@@ -21,6 +21,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DECIMAL,
       },
+      quotation: {
+        allowNull: false,
+        type: Sequelize.DECIMAL,
+      },
       type: {
         allowNull: false,
         type: Sequelize.STRING,
