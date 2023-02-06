@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       type: {
         type: DataTypes.ENUM,
-        values: ["DOMAIN_OWNER", "COMPANIES", "INDIVIDUAL"],
+        values: ["DOMAIN_OWNER", "COMPANY", "INDIVIDUAL"],
         allowNull: false,
       },
     },

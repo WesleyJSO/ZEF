@@ -3,21 +3,29 @@ const models = require("../models/index.js");
 const repository = models.sequelize.models.Member;
 const walletRepository = models.sequelize.models.Wallet;
 
+const validateParameters = (name, document, type) => {
+  if (!name || !name.trim()) {
+    return { statusCode: 400, message: "Name should be informed!" };
+  }
+  if (!document || !document.trim()) {
+    return { statusCode: 400, message: "Document should be informed!" };
+  }
+  if (!type || !["DOMAIN_OWNER", "COMPANY", "INDIVIDUAL"].includes(type)) {
+    return {
+      statusCode: 400,
+      message:
+        "Member type should be informed (DOMAIN_OWNER, COMPANY, INDIVIDUAL)!",
+    };
+  }
+};
+
 module.exports = {
   create: async ({ name, document, type }) => {
-    if (!name || !name.trim()) {
-      return { statusCode: 400, message: "Name should be informed!" };
+    const invalid = validateParameters(name, document, type);
+    if (invalid) {
+      return invalid;
     }
-    if (!document || !document.trim()) {
-      return { statusCode: 400, message: "Document should be informed!" };
-    }
-    if (!type || !["DOMAIN_OWNER", "COMPANIES", "INDIVIDUAL"].includes(type)) {
-      return {
-        statusCode: 400,
-        message:
-          "Member type should be informed (DOMAIN_OWNER, COMPANIES, INDIVIDUAL)!",
-      };
-    }
+
     const member = await repository.findOne({ where: { document } });
     if (member) {
       return {
@@ -39,7 +47,7 @@ module.exports = {
 
       await walletRepository.create(
         {
-          name: `${name} wallet`,
+          name: `${name}'s wallet`,
           memberId: memberCreated.id,
         },
         { transaction }
