@@ -16,7 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      member: {
+      value: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+      },
+      memberId: {
         type: DataTypes.INTEGER,
         references: {
           model: Member,

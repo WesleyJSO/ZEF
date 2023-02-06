@@ -6,6 +6,7 @@ module.exports = {
     return queryInterface.bulkInsert("Projects", [
       {
         name: "ZEF",
+        value: 1_000,
         memberId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),

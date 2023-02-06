@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
   class Wallet extends Model {
     static associate(models) {
       Wallet.Member = Wallet.belongsTo(models.Member);
-      Wallet.Balance = Wallet.hasMany(models.Balance);
+      Wallet.Balances = Wallet.hasMany(models.Balance);
     }
   }
   Wallet.init(
@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      member: {
+      memberId: {
         type: DataTypes.INTEGER,
         references: {
           model: Member,

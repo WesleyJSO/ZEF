@@ -14,10 +14,14 @@ module.exports = (sequelize, DataTypes) => {
     {
       type: {
         type: DataTypes.ENUM,
-        values: ["DEPOSIT", "WITHDRAW"],
+        values: ["DEPOSIT", "ASSET_SALE", "WITHDRAW", "MEMBERSHIP_FEE"],
         allowNull: false,
       },
-      wallet: {
+      value: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+      },
+      walletId: {
         type: DataTypes.INTEGER,
         references: {
           model: Wallet,
@@ -25,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
           deferrable: Deferrable.NOT,
         },
       },
-      currrency: {
+      currencyId: {
         type: DataTypes.INTEGER,
         references: {
           model: Currency,

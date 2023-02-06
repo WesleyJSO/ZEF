@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
   class Currency extends Model {
     static associate(models) {
       Currency.Project = Currency.belongsTo(models.Project);
-      Currency.AnchorCurrency = Currency.hasOne(models.Currency);
     }
   }
   Currency.init(
@@ -24,10 +23,22 @@ module.exports = (sequelize, DataTypes) => {
         values: ["FIAT", "DIGITAL"],
         allowNull: false,
       },
-      project: {
+      amount: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+      },
+      projectId: {
         type: DataTypes.INTEGER,
         references: {
           model: Project,
+          key: "id",
+          deferrable: Deferrable.NOT,
+        },
+      },
+      anchorCurrencyId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: Currency,
           key: "id",
           deferrable: Deferrable.NOT,
         },

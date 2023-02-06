@@ -6,6 +6,7 @@ module.exports = {
     return queryInterface.bulkInsert("Members", [
       {
         name: "ZEF INC.",
+        document: "XX.XXX.XXX/XXXX-XX",
         type: "DOMAIN_OWNER",
         createdAt: new Date(),
         updatedAt: new Date(),

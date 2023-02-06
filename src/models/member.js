@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      document: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       type: {
         type: DataTypes.ENUM,
         values: ["DOMAIN_OWNER", "COMPANIES", "INDIVIDUAL"],
