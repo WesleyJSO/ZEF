@@ -76,11 +76,11 @@ describe("Investments", () => {
     it("should make an investiment Kuna", (done) => {
       chai
         .request(server)
-        .post("/invest/kuna")
+        .post("/deposit/kuna")
         .set({ "Idempotency-Key": Uuid.v4() })
         .send({
           investorId: 1,
-          valueInvested: 1000,
+          depositValue: 1000,
         })
         .end((error, response) => {
           error !== null
@@ -128,7 +128,7 @@ describe("Investments", () => {
         .send({
           investorId: 1,
           projectInvestedId: 1,
-          valueInvested: 1000,
+          investedValue: 1000,
           transactionType: "DEPOSIT",
         })
         .end((error, response) => {

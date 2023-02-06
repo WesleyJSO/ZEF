@@ -21,9 +21,9 @@ module.exports = {
       res.status(500).send({ message: error.message });
     }
   },
-  investInCroatianKuna: async (req, res) => {
+  croatianKunaDeposity: async (req, res) => {
     try {
-      const { statusCode, message } = await service.investInCroatianKuna(
+      const { statusCode, message } = await service.croatianKunaDeposity(
         req.body
       );
 

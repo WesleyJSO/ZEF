@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "set NODE_ENV=development && nodemon --inspect ./app.js",
     "test": "set NODE_ENV=test && mocha --timeout 60000 './tests/*/*.test.js'",
-    "db_migrate_dev": "set NODE_ENV=development && sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all",
-    "db_migrate_test": "set NODE_ENV=test && sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all"
+    "db_dev": "set NODE_ENV=development && sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all",
+    "db_test": "set NODE_ENV=test && sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all"
   },
-  "author": "",
+  "author": "Wesley Silva",
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.0.3",

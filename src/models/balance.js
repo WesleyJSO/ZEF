@@ -12,9 +12,22 @@ module.exports = (sequelize, DataTypes) => {
   }
   Balance.init(
     {
+      // "MEMBERSHIP_FEE" -> HRK(Croatian kuna) converted to ZNK(ZEF kuna) only
+      // "DEPOSIT" -> HRK(Croatian kuna) deposit only
+      // "WITHDRAW" -> HRK(Croatian kuna) withdraw only
+      // "ASSET_SALE" -> digital currency sale only
+      // "ASSET_ACQUISITION" -> digital currency aquisition only
+      // "INVESTMENT" -> deduction of HRK(Croatian kuna) to buy digital currency
       type: {
         type: DataTypes.ENUM,
-        values: ["DEPOSIT", "ASSET_SALE", "WITHDRAW", "MEMBERSHIP_FEE"],
+        values: [
+          "MEMBERSHIP_FEE",
+          "DEPOSIT",
+          "WITHDRAW",
+          "ASSET_SALE",
+          "ASSET_ACQUISITION",
+          "INVESTMENT",
+        ],
         allowNull: false,
       },
       value: {
