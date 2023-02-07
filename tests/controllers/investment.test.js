@@ -48,7 +48,7 @@ describe("Investments", () => {
           error !== null
             ? console.error(error)
             : console.log(response.error.text || response.body);
-          response.should.have.status(201);
+          response.should.have.status(204);
           done();
         });
     });

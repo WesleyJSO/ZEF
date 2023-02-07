@@ -225,12 +225,14 @@ module.exports = {
       currencyId: croatinaKuna.id,
       memberId: member.id,
     });
-    return await makeAnInvestment({
+    await makeAnInvestment({
       investorId: member.id,
       projectInvestedId: project.id,
       investedValue: value,
       transactionType: "ASSET_ACQUISITION",
     });
+
+    return { statusCode: 204 };
   },
   makeAnInvestment,
 
