@@ -42,13 +42,10 @@ module.exports = {
     const member = await memberRepository.findOne({
       where: { id: memberId },
       include: {
-        model: models.sequelize.models.Wallet,
+        model: models.sequelize.models.Balance,
         include: {
-          model: models.sequelize.models.Balance,
-          include: {
-            model: models.sequelize.models.Currency,
-            where: { id: currencyId },
-          },
+          model: models.sequelize.models.Currency,
+          where: { id: currencyId },
         },
       },
     });
@@ -59,7 +56,7 @@ module.exports = {
         message: "Member couldn't be found, invalid member id!",
       };
     }
-    const grouped = groupBalancesByCurrency(member.Wallet.Balances);
+    const grouped = groupBalancesByCurrency(member.Balances);
 
     return { statusCode: 200, message: grouped };
   },
@@ -92,12 +89,9 @@ module.exports = {
     const member = await memberRepository.findOne({
       where: { id: memberId },
       include: {
-        model: models.sequelize.models.Wallet,
+        model: models.sequelize.models.Balance,
         include: {
-          model: models.sequelize.models.Balance,
-          include: {
-            model: models.sequelize.models.Currency,
-          },
+          model: models.sequelize.models.Currency,
         },
       },
     });
@@ -107,7 +101,7 @@ module.exports = {
         message: "Member couldn't be found, invalid member id!",
       };
     }
-    const grouped = groupBalancesByCurrency(member.Wallet.Balances);
+    const grouped = groupBalancesByCurrency(member.Balances);
 
     return { statusCode: 200, message: grouped };
   },

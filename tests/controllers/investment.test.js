@@ -36,7 +36,7 @@ describe("Investments", () => {
       balanceRepository.create({
         type: "DEPOSIT",
         value: 1000,
-        walletId: 1,
+        memberId: 1,
         currencyId: 2,
       });
       chai
@@ -58,7 +58,7 @@ describe("Investments", () => {
       balanceRepository.create({
         type: "DEPOSIT",
         value: 1000,
-        walletId: 1,
+        memberId: 1,
         currencyId: 2,
       });
       chai

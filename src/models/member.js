@@ -4,8 +4,8 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Member extends Model {
     static associate(models) {
-      Member.Wallet = Member.hasOne(models.Wallet);
       Member.Projects = Member.hasMany(models.Project);
+      Member.Balances = Member.hasMany(models.Balance);
     }
   }
   Member.init(

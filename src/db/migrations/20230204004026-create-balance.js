@@ -17,7 +17,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DECIMAL,
       },
-      walletId: {
+      memberId: {
         allowNull: false,
         type: Sequelize.INTEGER,
       },

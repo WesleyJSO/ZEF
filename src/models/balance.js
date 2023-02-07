@@ -1,12 +1,12 @@
 "use strict";
 const { Model, Deferrable } = require("sequelize");
 const Currency = require("./currency");
-const Wallet = require("./wallet");
+const Member = require("./member");
 
 module.exports = (sequelize, DataTypes) => {
   class Balance extends Model {
     static associate(models) {
-      Balance.Wallet = Balance.belongsTo(models.Wallet);
+      Balance.Member = Balance.belongsTo(models.Member);
       Balance.Currency = Balance.belongsTo(models.Currency);
     }
   }
@@ -34,10 +34,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL,
         allowNull: false,
       },
-      walletId: {
+      memberId: {
         type: DataTypes.INTEGER,
         references: {
-          model: Wallet,
+          model: Member,
           key: "id",
           deferrable: Deferrable.NOT,
         },

@@ -4,7 +4,6 @@ const balanceRepository = models.sequelize.models.Balance;
 const currencyRepository = models.sequelize.models.Currency;
 const memberRepository = models.sequelize.models.Member;
 const projectRepository = models.sequelize.models.Project;
-const walletRepository = models.sequelize.models.Wallet;
 
 module.exports = {
   balanceRepository,
@@ -13,7 +12,6 @@ module.exports = {
     await currencyRepository.destroy({ truncate: { cascade: true } });
     await memberRepository.destroy({ truncate: { cascade: true } });
     await projectRepository.destroy({ truncate: { cascade: true } });
-    await walletRepository.destroy({ truncate: { cascade: true } });
 
     await memberRepository.create({
       id: 1,
@@ -59,13 +57,5 @@ module.exports = {
         updatedAt: new Date(),
       },
     ]);
-
-    await walletRepository.create({
-      id: 1,
-      name: "ZEF Wallet",
-      memberId: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
   },
 };

@@ -7,7 +7,7 @@ module.exports = {
       {
         type: "MEMBERSHIP_FEE",
         value: 1_000,
-        walletId: 1,
+        memberId: 1,
         currencyId: 2,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -15,7 +15,7 @@ module.exports = {
       {
         type: "INVESTMENT",
         value: -1_000,
-        walletId: 1,
+        memberId: 1,
         currencyId: 2,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -23,7 +23,7 @@ module.exports = {
       {
         type: "ASSET_ACQUISITION",
         value: 1_000,
-        walletId: 1,
+        memberId: 1,
         currencyId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),

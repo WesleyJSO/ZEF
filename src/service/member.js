@@ -1,7 +1,6 @@
 const models = require("../models/index.js");
 
 const repository = models.sequelize.models.Member;
-const walletRepository = models.sequelize.models.Wallet;
 
 const validateParameters = (name, document, type) => {
   if (!name) {
@@ -45,15 +44,7 @@ module.exports = {
         { transaction }
       );
 
-      await walletRepository.create(
-        {
-          name: `${name}'s wallet`,
-          memberId: memberCreated.id,
-        },
-        { transaction }
-      );
       await transaction.commit();
-      await memberCreated.getWallet();
 
       return { statusCode: 201, message: memberCreated };
     } catch (error) {
@@ -61,7 +52,7 @@ module.exports = {
       await transaction.rollback();
       return {
         statusCode: 500,
-        message: `Error while creating member and wallet: ${error.message}`,
+        message: `Error while creating member: ${error.message}`,
       };
     }
   },

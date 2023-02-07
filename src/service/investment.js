@@ -19,8 +19,8 @@ const isMembershipAlreadyPaid = async (memberId) => {
   const paidMembershipFee = await balanceRepository.findOne({
     where: { type: "MEMBERSHIP_FEE" },
     include: {
-      model: models.sequelize.models.Wallet,
-      where: { memberId: memberId },
+      model: models.sequelize.models.Member,
+      where: { id: memberId },
     },
   });
   if (paidMembershipFee) {
@@ -48,13 +48,6 @@ const validateMember = (member) => {
     return {
       statusCode: 404,
       message: "Member couldn't be found, invalid member id!",
-    };
-  }
-  if (!member.Wallet) {
-    return {
-      statusCode: 400,
-      message:
-        "Member doesn't have a wallet, it's possible that an error occoured during registration!",
     };
   }
 };
@@ -89,10 +82,7 @@ const makeAnInvestment = async ({
     return invalidParameters;
   }
 
-  const investor = await memberRepository.findOne({
-    where: { id: investorId },
-    include: models.sequelize.models.Wallet,
-  });
+  const investor = await memberRepository.findByPk(investorId);
   if (!investor) {
     return {
       statusCode: 404,
@@ -138,7 +128,7 @@ const makeAnInvestment = async ({
       type: "INVESTMENT",
       value: investedValue * -1,
       currencyId: croatinaKuna.id,
-      walletId: investor.Wallet.id,
+      memberId: investor.id,
     });
 
     projectInvested.value += investedValue;
@@ -159,7 +149,7 @@ const makeAnInvestment = async ({
     const credit = await balanceRepository.create({
       type: "ASSET_ACQUISITION",
       value: calculatedDigitalAmount,
-      walletId: investor.Wallet.id,
+      memberId: investor.id,
       currencyId: projectInvested.Currency.id,
     });
 
@@ -189,10 +179,7 @@ const croatianKunaDeposity = async ({ investorId, depositValue }) => {
         "Deposit value should be informed and should be greather than 0.0!",
     };
   }
-  const investor = await memberRepository.findOne({
-    where: { id: investorId },
-    include: models.sequelize.models.Wallet,
-  });
+  const investor = await memberRepository.findByPk(investorId);
   if (!investor) {
     return {
       statusCode: 404,
@@ -208,7 +195,7 @@ const croatianKunaDeposity = async ({ investorId, depositValue }) => {
     type: "DEPOSIT",
     value: depositValue,
     currencyId: croatinaKuna.id,
-    walletId: investor.Wallet.id,
+    memberId: investor.id,
   });
   return { statusCode: 201, message: deposit };
 };
@@ -223,10 +210,7 @@ module.exports = {
     if (membershipPaid) {
       return membershipPaid;
     }
-    const member = await memberRepository.findOne({
-      where: { id: memberId },
-      include: models.sequelize.models.Wallet,
-    });
+    const member = await memberRepository.findByPk(memberId);
     const invalidMember = validateMember(member);
     if (invalidMember) {
       return invalidMember;
@@ -239,7 +223,7 @@ module.exports = {
       type: "MEMBERSHIP_FEE",
       value,
       currencyId: croatinaKuna.id,
-      walletId: member.Wallet.id,
+      memberId: member.id,
     });
     return await makeAnInvestment({
       investorId: member.id,
