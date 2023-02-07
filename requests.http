@@ -1,0 +1,150 @@
+### Create a new member
+
+POST http://127.0.0.1:9999/member HTTP/1.1
+content-type: application/json
+Idempotency-Key: 1
+
+{
+    "name": "Wesley",
+    "document":"123.123.321.YYY", 
+    "type": "INDIVIDUAL"
+}
+
+###
+
+POST http://127.0.0.1:9999/member HTTP/1.1
+content-type: application/json
+Idempotency-Key: 2
+
+{
+    "name": "Cintia",
+    "document":"123.123.321.YYYX", 
+    "type": "INDIVIDUAL"
+}
+
+### Pay membership fee
+
+POST http://127.0.0.1:9999/membership HTTP/1.1
+content-type: application/json
+Idempotency-Key: 3
+
+{
+    "value": 100000,
+    "memberId": 2
+}
+
+### 
+
+POST http://127.0.0.1:9999/membership HTTP/1.1
+content-type: application/json
+Idempotency-Key: 4
+
+{
+    "value": 100000,
+    "memberId": 3
+}
+
+### check balance for member and currency
+
+GET http://127.0.0.1:9999/balance/2/1 HTTP/1.1
+content-type: application/json
+
+### get all currencies balance for a member
+
+GET http://127.0.0.1:9999/balance/2 HTTP/1.1
+content-type: application/json
+
+### administrator can see all the balance of all currencies
+
+GET http://127.0.0.1:9999/balance HTTP/1.1
+content-type: application/json
+MemberId: 2
+
+###
+
+GET http://127.0.0.1:9999/detailed-balance/2/2 HTTP/1.1
+content-type: application/json
+MemberId: 2
+
+###
+
+POST http://127.0.0.1:9999/deposit/kuna HTTP/1.1
+content-type: application/json
+Idempotency-Key: 3
+
+{
+    "investorId": 2, 
+    "depositValue": 450
+}
+
+
+###
+
+POST http://127.0.0.1:9999/invest HTTP/1.1
+content-type: application/json
+Idempotency-Key: 5
+
+{
+    "investorId": 1,
+    "projectInvestedId": 1,
+    "investedValue": 500
+}
+
+###
+
+POST http://127.0.0.1:9999/project HTTP/1.1
+content-type: application/json
+Idempotency-Key: 6
+
+{
+    "name": "TEST PROJECT",
+    "currencyName": "TEST CURRENCY",
+    "alias": "TCR",
+    "memberId": 3,
+    "value": 1000,
+    "amount": 1000
+}
+
+### Issue currency
+
+PUT http://127.0.0.1:9999/issue/1
+content-type: application/json
+Idempotency-Key: 8
+DomainOwnerId: 1
+
+{
+    "amount": 100000
+}
+
+### Withdraw
+POST http://127.0.0.1:9999/withdraw/1
+content-type: application/json
+Idempotency-Key: 9
+MemberId: 2
+
+{
+    "amount": 25000
+}
+
+### Withdraw
+POST http://127.0.0.1:9999/withdraw/1
+content-type: application/json
+Idempotency-Key: 10
+MemberId: 2
+
+{
+    "amount": 25000
+}
+
+###
+
+POST http://127.0.0.1:9999/invest
+content-type: application/json
+Idempotency-Key: 10
+
+{
+    "acquiredCurrencyId": 3,
+    "paymentCurrencyId": 1,
+    "investorId": 2,
+    "investedValue": 10
+}
