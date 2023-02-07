@@ -33,9 +33,9 @@ module.exports = {
       res.status(500).send({ message: error.message });
     }
   },
-  returnCurrency: async (req, res) => {
+  withdraw: async (req, res) => {
     try {
-      const { statusCode, message } = await service.returnCurrency({
+      const { statusCode, message } = await service.withdraw({
         ...req.params,
         ...req.headers,
         ...req.body,

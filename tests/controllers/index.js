@@ -6,13 +6,15 @@ const memberRepository = models.sequelize.models.Member;
 const projectRepository = models.sequelize.models.Project;
 
 module.exports = {
+  projectRepository,
+  currencyRepository,
   balanceRepository,
   memberRepository,
   initialize: async () => {
-    await balanceRepository.destroy({ truncate: { cascade: true } });
-    await currencyRepository.destroy({ truncate: { cascade: true } });
-    await memberRepository.destroy({ truncate: { cascade: true } });
-    await projectRepository.destroy({ truncate: { cascade: true } });
+    await balanceRepository.destroy({ truncate: true, cascade: false });
+    await currencyRepository.destroy({ truncate: true, cascade: false });
+    await memberRepository.destroy({ truncate: true, cascade: false });
+    await projectRepository.destroy({ truncate: true, cascade: false });
 
     await memberRepository.create({
       id: 1,

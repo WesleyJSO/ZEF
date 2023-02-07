@@ -3,9 +3,9 @@ const controller = require("../controllers/investment.js");
 
 const router = express.Router();
 
-router.post("/deposit/kuna", controller.croatianKunaDeposity);
+// router.post("/deposit/kuna", controller.croatianKunaDeposity);
 router.post("/membership", controller.payMembershipFee);
 router.post("/invest", controller.makeAnInvestment);
-router.post("/withdraw/:currencyId", controller.returnCurrency);
+router.post("/withdraw/:currencyId", controller.withdraw);
 
 module.exports = router;

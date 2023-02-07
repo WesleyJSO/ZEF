@@ -52,12 +52,26 @@ const validateMember = (member) => {
   }
 };
 
-const validateInvestment = (investorId, projectInvestedId, investedValue) => {
+const validateInvestment = (
+  acquiredCurrencyId,
+  paymentCurrencyId,
+  investorId,
+  investedValue
+) => {
+  if (!acquiredCurrencyId) {
+    return {
+      statusCode: 400,
+      message: "Acquired currency id should be informed!",
+    };
+  }
+  if (!paymentCurrencyId) {
+    return {
+      statusCode: 400,
+      message: "Payment currency id should be informed!",
+    };
+  }
   if (!investorId) {
     return { statusCode: 400, message: "Member id should be informed!" };
-  }
-  if (!projectInvestedId) {
-    return { statusCode: 400, message: "Project id should be informed!" };
   }
   if (!investedValue || isNaN(investedValue) || investedValue <= 0) {
     return {
@@ -69,13 +83,15 @@ const validateInvestment = (investorId, projectInvestedId, investedValue) => {
 };
 
 const makeAnInvestment = async ({
+  acquiredCurrencyId,
+  paymentCurrencyId,
   investorId,
-  projectInvestedId,
   investedValue,
 }) => {
   const invalidParameters = validateInvestment(
+    acquiredCurrencyId,
+    paymentCurrencyId,
     investorId,
-    projectInvestedId,
     investedValue
   );
   if (invalidParameters) {
@@ -90,73 +106,84 @@ const makeAnInvestment = async ({
     };
   }
 
-  const croatinaKuna = await currencyRepository.findOne({
-    where: { name: "Croatian kuna" },
-  });
-
-  // increase value invested in project
-  const projectInvested = await projectRepository.findOne({
-    where: { id: projectInvestedId },
-    include: models.sequelize.models.Currency,
-  });
-  if (!projectInvested) {
-    throw new Error(
-      "Project not found, a valid project id should be informed!"
-    );
-  }
-
-  const { message: kunaBalance } =
-    await balanceService.getMemberCurrencyBalance({
-      memberId: investor.id,
-      currencyId: croatinaKuna.id,
-    });
-  if (
-    !kunaBalance.HRK ||
-    !kunaBalance.HRK.amount ||
-    kunaBalance.HRK.amount < investedValue
-  ) {
+  const acquiredCurrency = await currencyRepository.findByPk(
+    acquiredCurrencyId
+  );
+  if (!acquiredCurrency) {
     return {
-      statusCode: 409,
-      message: "Insuficient amount of Kuna to invest!",
+      statusCode: 404,
+      message: "Invalid acquired currency id!",
+    };
+  }
+  const paymentCurrency = await currencyRepository.findByPk(paymentCurrencyId);
+  if (!paymentCurrency) {
+    return {
+      statusCode: 404,
+      message: "Invalid paayment currency id!",
     };
   }
 
+  const calculatedInvestmentValue = investedValue * paymentCurrency.quotation;
+  const currencyAmountAcquired =
+    calculatedInvestmentValue / acquiredCurrency.quotation;
+
   const transaction = await models.sequelize.transaction();
   try {
-    // debit Croatian kuna(ZKN) value from investor
     await balanceRepository.create({
-      type: "INVESTMENT",
+      type: "ASSET_SALE",
       value: investedValue * -1,
-      currencyId: croatinaKuna.id,
-      memberId: investor.id,
+      memberId: investorId,
+      currencyId: paymentCurrency.id,
     });
-
-    projectInvested.value += investedValue;
-    await projectRepository.update(
-      { value: projectInvested.value },
-      { where: { id: projectInvested.id } }
-    );
-
-    // credit project currency value to investor
-    // (project value / currency amount) * my amount ZNK
-    const quotation = projectInvested.value / projectInvested.Currency.amount;
-    const calculatedDigitalAmount = investedValue / quotation;
-
-    await currencyRepository.update(
-      { quotation },
-      { where: { id: projectInvested.Currency.id } }
-    );
-    const credit = await balanceRepository.create({
+    const assetAcquisition = await balanceRepository.create({
       type: "ASSET_ACQUISITION",
-      value: calculatedDigitalAmount,
-      memberId: investor.id,
-      currencyId: projectInvested.Currency.id,
+      value: currencyAmountAcquired,
+      memberId: investorId,
+      currencyId: acquiredCurrency.id,
     });
+    const paymentProject = await projectRepository.findByPk(
+      paymentCurrency.projectId
+    );
+    const acquiredProject = await projectRepository.findByPk(
+      acquiredCurrency.projectId
+    );
+
+    paymentProject.value -= calculatedInvestmentValue;
+    acquiredProject.value += currencyAmountAcquired;
+
+    await projectRepository.update(
+      { value: paymentProject.value },
+      { where: { id: paymentProject.id } }
+    );
+    await projectRepository.update(
+      { value: acquiredProject.value },
+      { where: { id: acquiredProject.id } }
+    );
+
+    // TODO CHANGE QUOTATION FROM BOTH PROJECTS BEFORE COMMIT
+    // projectCurrency.amount += issueAmount;
+    // projectCurrency.quotation =
+    //   projectCurrency.Project.value / projectCurrency.amount;
+    // await repository.update(
+    //   { amount: projectCurrency.amount, quotation: projectCurrency.quotation },
+    //   { where: { id: projectCurrency.id } }
+    // );
+
+    // projectCurrency.amount += issueAmount;
+    // projectCurrency.quotation =
+    //   projectCurrency.Project.value / projectCurrency.amount;
+    // await repository.update(
+    //   { amount: projectCurrency.amount, quotation: projectCurrency.quotation },
+    //   { where: { id: projectCurrency.id } }
+    // );
 
     await transaction.commit();
-    return { statusCode: 201, message: credit };
+
+    return {
+      statusCode: 201,
+      message: assetAcquisition,
+    };
   } catch (error) {
-    console.error(error);
     await transaction.rollback();
     return {
       statusCode: 500,
@@ -201,7 +228,7 @@ const croatianKunaDeposity = async ({ investorId, depositValue }) => {
 };
 
 module.exports = {
-  returnCurrency: async ({
+  withdraw: async ({
     currencyId,
     memberid: memberId,
     amount: withdrawAmount,
@@ -350,14 +377,84 @@ module.exports = {
       currencyId: croatinaKuna.id,
       memberId: member.id,
     });
-    await makeAnInvestment({
-      investorId: member.id,
-      projectInvestedId: project.id,
-      investedValue: value,
-      transactionType: "ASSET_ACQUISITION",
-    });
 
-    return { statusCode: 204 };
+    // increase value invested in project
+    const projectInvested = await projectRepository.findOne({
+      where: { id: project.id },
+      include: models.sequelize.models.Currency,
+    });
+    if (!projectInvested) {
+      throw new Error(
+        "Project not found, a valid project id should be informed!"
+      );
+    }
+
+    const investor = await memberRepository.findByPk(memberId);
+    if (!investor) {
+      return {
+        statusCode: 404,
+        message: "Member couldn't be found, invalid member id!",
+      };
+    }
+
+    const { message: kunaBalance } =
+      await balanceService.getMemberCurrencyBalance({
+        memberId: investor.id,
+        currencyId: croatinaKuna.id,
+      });
+    if (
+      !kunaBalance.HRK ||
+      !kunaBalance.HRK.amount ||
+      kunaBalance.HRK.amount < value
+    ) {
+      return {
+        statusCode: 409,
+        message: "Insuficient amount of Kuna to invest!",
+      };
+    }
+
+    const transaction = await models.sequelize.transaction();
+    try {
+      // debit Croatian kuna(ZKN) value from investor
+      await balanceRepository.create({
+        type: "INVESTMENT",
+        value: value * -1,
+        currencyId: croatinaKuna.id,
+        memberId: investor.id,
+      });
+
+      projectInvested.value += value;
+      await projectRepository.update(
+        { value: projectInvested.value },
+        { where: { id: projectInvested.id } }
+      );
+
+      // credit project currency value to investor
+      // (project value / currency amount) * my amount ZNK
+      const quotation = projectInvested.value / projectInvested.Currency.amount;
+      const calculatedDigitalAmount = value / quotation;
+
+      await currencyRepository.update(
+        { quotation },
+        { where: { id: projectInvested.Currency.id } }
+      );
+      const credit = await balanceRepository.create({
+        type: "ASSET_ACQUISITION",
+        value: calculatedDigitalAmount,
+        memberId: investor.id,
+        currencyId: projectInvested.Currency.id,
+      });
+
+      await transaction.commit();
+      return { statusCode: 204 };
+    } catch (error) {
+      console.error(error);
+      await transaction.rollback();
+      return {
+        statusCode: 500,
+        message: `Error during investment transaction: ${error.message}`,
+      };
+    }
   },
   makeAnInvestment,
 
