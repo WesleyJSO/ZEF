@@ -33,4 +33,18 @@ module.exports = {
       res.status(500).send({ message: error.message });
     }
   },
+  returnCurrency: async (req, res) => {
+    try {
+      const { statusCode, message } = await service.returnCurrency({
+        ...req.params,
+        ...req.headers,
+        ...req.body,
+      });
+
+      res.status(statusCode).send(message);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: error.message });
+    }
+  },
 };

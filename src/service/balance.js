@@ -33,35 +33,44 @@ const validateParameters = (memberId, currencyId) => {
   }
 };
 
-module.exports = {
-  getMemberCurrencyBalance: async ({ memberId, currencyId }) => {
-    const invalid = validateParameters(memberId, currencyId);
-    if (invalid) {
-      return invalid;
-    }
+const getMemberCurrencyBalance = async ({ memberId, currencyId }) => {
+  const invalid = validateParameters(memberId, currencyId);
+  if (invalid) {
+    return invalid;
+  }
 
-    const member = await memberRepository.findOne({
-      where: { id: memberId },
+  const member = await memberRepository.findOne({
+    where: { id: memberId },
+    include: {
+      model: models.sequelize.models.Balance,
       include: {
-        model: models.sequelize.models.Balance,
-        include: {
-          model: models.sequelize.models.Currency,
-          where: { id: currencyId },
-        },
+        model: models.sequelize.models.Currency,
+        where: { id: currencyId },
       },
-    });
+    },
+  });
 
-    if (!member) {
-      return {
-        statusCode: 404,
-        message: "Member couldn't be found, invalid member id!",
-      };
-    }
-    const grouped = groupBalancesByCurrency(member.Balances);
+  if (!member) {
+    return {
+      statusCode: 404,
+      message: "Member couldn't be found, invalid member id!",
+    };
+  }
+  const grouped = groupBalancesByCurrency(member.Balances);
 
-    return { statusCode: 200, message: grouped };
-  },
+  return { statusCode: 200, message: grouped };
+};
 
+const convertToNewCurrency = async (currencyId, memberId, withdrawAmount) => {
+  const balances = balanceRepository.findAll({
+    where: { currencyId, memberId },
+  });
+  return balances;
+};
+
+module.exports = {
+  convertToNewCurrency,
+  getMemberCurrencyBalance,
   getSumaryOfCurrencyValues: async ({ memberid: memberId }) => {
     if (!memberId) {
       return {

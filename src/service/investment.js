@@ -201,6 +201,131 @@ const croatianKunaDeposity = async ({ investorId, depositValue }) => {
 };
 
 module.exports = {
+  returnCurrency: async ({
+    currencyId,
+    memberid: memberId,
+    amount: withdrawAmount,
+  }) => {
+    if (!currencyId) {
+      return { statusCode: 404, message: "Invalid currency id!" };
+    }
+    if (!memberId) {
+      return { statusCode: 404, message: "Invalid member id!" };
+    }
+    if (!withdrawAmount || isNaN(withdrawAmount) || withdrawAmount <= 0) {
+      return {
+        statusCode: 400,
+        message: "Amount issued should be informed and be higher than 0.0!",
+      };
+    }
+
+    const member = await memberRepository.findByPk(memberId);
+    if (!member || member === "DOMAIN_OWNER") {
+      return {
+        statusCode: 422,
+        message: "Member id shouldn't be from a domain owner!",
+      };
+    }
+    const currencyToWithdraw = await currencyRepository.findByPk(currencyId);
+    if (!currencyToWithdraw || currencyToWithdraw.type === "FIAT") {
+      return {
+        statusCode: 422,
+        message: "Currency id should be valid and from a digital currency!",
+      };
+    }
+    const { message: currencyAmount } =
+      await balanceService.getMemberCurrencyBalance({
+        memberId,
+        currencyId,
+      });
+    if (
+      withdrawAmount > currencyAmount[Object.keys(currencyAmount)[0]].amount
+    ) {
+      return {
+        statusCode: 409,
+        message: "Insuficient funds!",
+      };
+    }
+
+    const transaction = await models.sequelize.transaction();
+    try {
+      const zkn = await currencyRepository.findOne({
+        where: { name: "ZEF kuna" },
+      });
+      const hrk = await currencyRepository.findOne({
+        where: { name: "Croatian kuna" },
+      });
+
+      await balanceRepository.create({
+        type: "ASSET_SALE",
+        value: withdrawAmount * -1,
+        memberId,
+        currencyId,
+      });
+
+      const project = await projectRepository.findByPk(
+        currencyToWithdraw.projectId
+      );
+
+      if (zkn.id != currencyId) {
+        const amountConvertedToZKN = await balanceService.convertToNewCurrency(
+          zkn.id,
+          memberId,
+          withdrawAmount
+        );
+        await balanceRepository.create({
+          type: "ASSET_ACQUISITION",
+          value: amountConvertedToZKN,
+          memberId,
+          currencyId: zkn.id,
+        });
+        await balanceRepository.create({
+          type: "ASSET_SALE",
+          value: amountConvertedToZKN * -1,
+          memberId,
+          currencyId: zkn.id,
+        });
+      }
+
+      const amountConvertedToHRK =
+        withdrawAmount * currencyToWithdraw.quotation;
+
+      project.value -= amountConvertedToHRK;
+      await projectRepository.update(
+        { value: project.value },
+        { where: { id: project.id } }
+      );
+
+      await balanceRepository.create({
+        type: "ASSET_ACQUISITION",
+        value: amountConvertedToHRK,
+        memberId,
+        currencyId: hrk.id,
+      });
+
+      currencyToWithdraw.quotation = project.value / currencyToWithdraw.amount;
+      await currencyRepository.update(
+        { quotation: currencyToWithdraw.quotation },
+        { where: { id: currencyToWithdraw.id } }
+      );
+
+      const withdraw = await balanceRepository.create({
+        type: "WITHDRAW",
+        value: amountConvertedToHRK * -1,
+        memberId,
+        currencyId: hrk.id,
+      });
+
+      await transaction.commit();
+      return { statusCode: 201, message: withdraw };
+    } catch (error) {
+      await transaction.rollback();
+      return {
+        statusCode: 500,
+        message: `Error during investment transaction: ${error.message}`,
+      };
+    }
+  },
   payMembershipFee: async ({ value, memberId }) => {
     const invalid = validateMembershipFee(value, memberId);
     if (invalid) {

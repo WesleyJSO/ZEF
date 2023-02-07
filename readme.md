@@ -14,7 +14,7 @@
 ✔️ issue currency (Domain owner) \
 ✔️ create an account (Member) \
 ✔️ see my account balance (Member) \
-❌ exchange currency (Member) \
+✔️ exchange currency (Member) \
 ✔️ create a new currency (Member) \
 ❌ return currency to Domain owner (Member)
 
