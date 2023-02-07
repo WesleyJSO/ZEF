@@ -2,7 +2,7 @@ const models = require("../models/index.js");
 
 const repository = models.sequelize.models.Balance;
 const memberRepository = models.sequelize.models.Member;
-const currencyRepository = models.sequelize.models.Currency;
+const balanceRepository = models.sequelize.models.Balance;
 
 const groupBalancesByCurrency = (balances) => {
   const grouped = {};
@@ -20,6 +20,7 @@ const groupBalancesByCurrency = (balances) => {
         grouped[balance.Currency.alias].amount += balance.value;
       }
     });
+
   return grouped;
 };
 
@@ -104,5 +105,29 @@ module.exports = {
     const grouped = groupBalancesByCurrency(member.Balances);
 
     return { statusCode: 200, message: grouped };
+  },
+  getDetailedBalance: async ({ memberId, currencyId }) => {
+    const invalid = validateParameters(memberId, currencyId);
+    if (invalid) {
+      return invalid;
+    }
+    const balances = await balanceRepository.findAll({
+      where: { currencyId, memberId },
+      include: {
+        model: models.sequelize.models.Currency,
+      },
+    });
+    let balanceAmount = 0;
+    balances.forEach((balance) => {
+      balanceAmount += balance.value;
+      balance.dataValues.currencyName = balance.dataValues.Currency.name;
+      delete balance.dataValues.id;
+      delete balance.dataValues.memberId;
+      delete balance.dataValues.currencyId;
+      delete balance.dataValues.updatedAt;
+      delete balance.dataValues.Currency;
+      return balance;
+    });
+    return { statusCode: 200, message: { balances, balanceAmount } };
   },
 };

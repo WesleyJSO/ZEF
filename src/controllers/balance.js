@@ -35,4 +35,15 @@ module.exports = {
       res.status(500).send({ message: error.message });
     }
   },
+  getDetailedBalance: async (req, res) => {
+    try {
+      const { statusCode, message } = await service.getDetailedBalance(
+        req.params
+      );
+      res.status(statusCode).send(message);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: error.message });
+    }
+  },
 };

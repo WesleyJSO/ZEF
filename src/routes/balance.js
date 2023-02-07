@@ -9,5 +9,9 @@ router.get(
 );
 router.get("/balance/:memberId", controller.getAllBalance);
 router.get("/balance", controller.getSumaryOfCurrencyValues);
+router.get(
+  "/detailed-balance/:memberId/:currencyId",
+  controller.getDetailedBalance
+);
 
 module.exports = router;

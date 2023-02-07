@@ -7,6 +7,7 @@ const projectRepository = models.sequelize.models.Project;
 
 module.exports = {
   balanceRepository,
+  memberRepository,
   initialize: async () => {
     await balanceRepository.destroy({ truncate: { cascade: true } });
     await currencyRepository.destroy({ truncate: { cascade: true } });
