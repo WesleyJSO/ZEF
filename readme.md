@@ -1,5 +1,25 @@
 # ZEF app
 
+## Setup
+
+In order to run the project execute the following commands
+
+- `npm install`
+- `npm run db_dev`
+- `npm run dev`
+
+Afetr that the deplendecies and database should be configured and the system up running.
+The file `./requests.http` have some examples of the requests that could be made. To run the queries from the `./requests.http` file install [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) in VS Code
+
+To restart the dev database run:
+
+- `npm run db_test`
+- `npm run test`
+
+Considering that `npm install` commando was already executed, the tests should be fired. \
+
+To check the database install [SQLite](https://marketplace.visualstudio.com/items?itemName=alexcvzz.vscode-sqlite) in VS Code
+
 # 🤞 Requirements
 
 ✔️ Members can join ZEF \
@@ -17,8 +37,6 @@
 ✔️ exchange currency (Member) \
 ✔️ create a new currency (Member) \
 ❌ return currency to Domain owner (Member)
-
-## Setup
 
 ## Frameworks and libraries
 
