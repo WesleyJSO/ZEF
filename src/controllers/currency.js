@@ -1,9 +1,13 @@
 const service = require("../service/currency");
 
 module.exports = {
-  findAll: async (req, res) => {
+  issueCurrency: async (req, res) => {
     try {
-      const { statusCode, message } = await service.findAll();
+      const { statusCode, message } = await service.issueCurrency({
+        ...req.headers,
+        ...req.params,
+        ...req.body,
+      });
 
       res.status(statusCode).send(message);
     } catch (error) {

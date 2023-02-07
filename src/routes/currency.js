@@ -3,6 +3,6 @@ const controller = require("../controllers/currency.js");
 
 const router = express.Router();
 
-router.get("/currency", controller.findAll);
+router.put("/issue/:currencyId", controller.issueCurrency);
 
 module.exports = router;
